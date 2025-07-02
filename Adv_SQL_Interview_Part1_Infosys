@@ -1,0 +1,416 @@
+--Create Database Advanced_SQL_Quires_Part1
+
+--use Advanced_SQL_Quires_Part1
+
+
+--create table user_login
+--(
+--	user_id		int,
+--	login_date	date
+--);
+
+--INSERT INTO user_login VALUES (1, '2024-03-01');
+--INSERT INTO user_login VALUES (1, '2024-03-02');
+--INSERT INTO user_login VALUES (1, '2024-03-03');
+--INSERT INTO user_login VALUES (1, '2024-03-04');
+--INSERT INTO user_login VALUES (1, '2024-03-06');
+--INSERT INTO user_login VALUES (1, '2024-03-10');
+--INSERT INTO user_login VALUES (1, '2024-03-11');
+--INSERT INTO user_login VALUES (1, '2024-03-12');
+--INSERT INTO user_login VALUES (1, '2024-03-13');
+--INSERT INTO user_login VALUES (1, '2024-03-14');
+--INSERT INTO user_login VALUES (1, '2024-03-20');
+--INSERT INTO user_login VALUES (1, '2024-03-25');
+--INSERT INTO user_login VALUES (1, '2024-03-26');
+--INSERT INTO user_login VALUES (1, '2024-03-27');
+--INSERT INTO user_login VALUES (1, '2024-03-28');
+--INSERT INTO user_login VALUES (1, '2024-03-29');
+--INSERT INTO user_login VALUES (1, '2024-03-30');
+--INSERT INTO user_login VALUES (2, '2024-03-01');
+--INSERT INTO user_login VALUES (2, '2024-03-02');
+--INSERT INTO user_login VALUES (2, '2024-03-03');
+--INSERT INTO user_login VALUES (2, '2024-03-04');
+--INSERT INTO user_login VALUES (3, '2024-03-01');
+--INSERT INTO user_login VALUES (3, '2024-03-02');
+--INSERT INTO user_login VALUES (3, '2024-03-03');
+--INSERT INTO user_login VALUES (3, '2024-03-04');
+--INSERT INTO user_login VALUES (3, '2024-03-04');
+--INSERT INTO user_login VALUES (3, '2024-03-04');
+--INSERT INTO user_login VALUES (3, '2024-03-05');
+--INSERT INTO user_login VALUES (4, '2024-03-01');
+--INSERT INTO user_login VALUES (4, '2024-03-02');
+--INSERT INTO user_login VALUES (4, '2024-03-03');
+--INSERT INTO user_login VALUES (4, '2024-03-04');
+--INSERT INTO user_login VALUES (4, '2024-03-04');
+
+
+
+--1.  Identify the users who logged in for 5 or more consecutive days. 
+--      Return the user id, start date, end date and no of consecutive days.
+--      Please remember a user can login multiple times during a day but only consider users whose consecutive logins spanned 5 days or more.
+
+
+--with cte as
+--(
+--select *,
+--DENSE_RANK() over(partition by user_id order by login_date) as dr,
+--DATEADD(day,-DENSE_RANK() over(partition by user_id order by login_date),login_date) as New_Date
+--from user_login
+--)
+--select 
+--user_id,
+--New_Date,
+--MIN(login_date) as Start_Date,
+--MAX(login_date) as End_Date,
+--datediff(day,MIN(login_date), MAX(login_date))+ 1 as con,
+--COUNT(*) as cnt
+--from cte
+--group by user_id,New_Date
+--having datediff(day,MIN(login_date), MAX(login_date))+1 >= 5
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--CREATE TABLE employees (
+--    id INT,
+--    name VARCHAR(50)
+--);
+
+--INSERT INTO employees VALUES (1, 'Lewis');
+--INSERT INTO employees VALUES (2, 'Max');
+--INSERT INTO employees VALUES (3, 'Charles');
+--INSERT INTO employees VALUES (4, 'Sainz');
+
+--CREATE TABLE events (
+--    event_name VARCHAR(50),
+--    emp_id INT,
+--    dates DATE
+--);
+--INSERT INTO events VALUES ('Product launch', 1, '2024-03-01');
+--INSERT INTO events VALUES ('Product launch', 3, '2024-03-01');
+--INSERT INTO events VALUES ('Product launch', 4, '2024-03-01');
+--INSERT INTO events VALUES ('Conference', 2, '2024-03-02');
+--INSERT INTO events VALUES ('Conference', 2, '2024-03-03');
+--INSERT INTO events VALUES ('Conference', 3, '2024-03-02');
+--INSERT INTO events VALUES ('Conference', 4, '2024-03-02');
+--INSERT INTO events VALUES ('Training', 3, '2024-03-04');
+--INSERT INTO events VALUES ('Training', 2, '2024-03-04');
+--INSERT INTO events VALUES ('Training', 4, '2024-03-04');
+--INSERT INTO events VALUES ('Training', 4, '2024-03-05');
+
+--2. -- Find out the employees who attended all company events
+
+--select 
+--name,
+--emp_id, COUNT(distinct event_name) as no_of_events
+--from events ev
+--join 
+--employees em
+--on ev.emp_id = em.id
+--group by emp_id,name
+--having COUNT(distinct event_name) = (select COUNT(distinct event_name) from events)
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+--create table brands
+--(
+--    Year    int,
+--    Brand   varchar(20),
+--    Amount  int
+--);
+--insert into brands values (2018, 'Apple', 45000);
+--insert into brands values (2019, 'Apple', 35000);
+--insert into brands values (2020, 'Apple', 75000);
+--insert into brands values (2018, 'Samsung',15000);
+--insert into brands values (2019, 'Samsung',20000);
+--insert into brands values (2020, 'Samsung',25000);
+--insert into brands values (2018, 'Nokia', 21000);
+--insert into brands values (2019, 'Nokia', 17000);
+--insert into brands values (2020, 'Nokia', 14000);
+
+
+--3.Write a query to fetch the record of brand whose amount is increasing every year.
+
+--with cte as
+--(
+--select *,
+--LAG(Amount,1,Amount-1) over(partition by brand order by year) as Prev_Yr_Amt,
+--case when Amount>LAG(Amount,1,Amount-1) over(partition by brand order by year)  then 1 else 0 end as Flg
+--from Brands
+--)
+--select * from brands
+--where brand not  in (select Brand from cte where flg = 0)
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--create table src_dest_distance
+--(
+--    source          varchar(20),
+--    destination     varchar(20),
+--    distance        int
+--);
+--insert into src_dest_distance values ('Bangalore', 'Hyderbad', 400);
+--insert into src_dest_distance values ('Hyderbad', 'Bangalore', 400);
+--insert into src_dest_distance values ('Mumbai', 'Delhi', 400);
+--insert into src_dest_distance values ('Delhi', 'Mumbai', 400);
+--insert into src_dest_distance values ('Chennai', 'Pune', 400);
+--insert into src_dest_distance values ('Pune', 'Chennai', 400);
+
+--4.Write a sql query to convert the given input into the expected output as shown below:
+
+--with cte as(
+--select *, ROW_NUMBER() over(order by (select null)) as id
+--from src_dest_distance
+--)
+--select 
+--a.source , a.destination,a.distance
+--from cte a
+--join cte b
+--on a.source = b.destination
+--and a.id < b.id
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+--create table useractivity (
+--username varchar(50),
+--activity varchar(50), 
+--startdate date, 
+--enddate date);
+
+--insert into useractivity values ('Amy','Travel','2020-02-12','2020-02-20');
+--insert into useractivity values ('Amy','Dancing','2020-02-21','2020-02-23');
+--insert into useractivity values ('Amy','Travel','2020-02-24','2020-02-28');
+--insert into useractivity values ('Joe','Travel','2020-02-11','2020-02-18');
+--insert into useractivity values ('Adam','Travel','2020-02-12','2020-02-20');
+--insert into useractivity values ('Adam','Dancing','2020-02-21','2020-02-23');
+--insert into useractivity values ('Adam','Singing','2020-02-24','2020-02-28');
+--insert into useractivity values ('Adam','Travel','2020-03-01','2020-03-28');
+
+
+--4. This table contains information about the activity performed by each user in a period of time.
+--A person with username performed an activity from startDate to endDate.
+--Write an SQL query to show the second most recent activity of each user. If the user only has one activity, return that one.
+--A user can't perform more than one activity at the same time. Return the result table in any order.
+
+
+--with cte as
+--(
+--select *,
+--ROW_NUMBER() over(partition by username order by startdate desc) as rn,
+--count(*) over(partition by username) as cnt
+--from useractivity
+--)
+--select 
+--username,activity,startdate,enddate
+--from cte
+--where rn = 2 or cnt = 1
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+--create table lifts
+--(
+--      id         	  int
+--    , capacity_kg     int
+--);
+
+--insert into lifts values (1, 300);
+--insert into lifts values (2, 350);
+
+--create table lift_passengers
+--(
+--      passenger_name    varchar(50)
+--    , weight_kg     	int
+--	, lift_id			int
+--);
+
+--insert into lift_passengers values ('Rahul', 85, 1);
+--insert into lift_passengers values ('Adarsh', 73, 1);
+--insert into lift_passengers values ('Riti', 95, 1);
+--insert into lift_passengers values ('Dheeraj', 80, 1);
+--insert into lift_passengers values ('Vimal', 83, 2);
+--insert into lift_passengers values ('Neha', 77, 2);
+--insert into lift_passengers values ('Priti', 73, 2);
+--insert into lift_passengers values ('Himanshi', 85, 2);
+
+
+--6. The relationship between the LIFT and LIFT_PASSENGERS table is such that multiple passengers can attempt to enter the same lift, but the total
+--weight of the passengers in a lift cannot exceed the lifts' capacity.
+--Your task is to write a SQL query that produces a comma-separated list of passengers who can be accommodated in each lift without exceeding
+--the lift's capacity. The passengers in the list be ordered by their weight in increasing order.
+
+--with cte as
+--(
+--select 
+--lift_id,
+--passenger_name,
+--weight_kg,
+--capacity_kg,
+--SUM(weight_kg) over(partition by lift_id order by weight_kg) as total_wt,
+--case when capacity_kg <= SUM(weight_kg) over(partition by lift_id order by weight_kg) then 1 else 0 end as flg
+--from lifts l
+--join 
+--lift_passengers p
+--on l.id = p.lift_id
+--)
+--select 
+--lift_id,
+--STRING_AGG(passenger_name,',') as passengers
+--from cte
+--where flg = 0
+--group by lift_id
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+--create table account_balance
+--(
+--    account_no          varchar(20),
+--    transaction_date    date,
+--    debit_credit        varchar(10),
+--    transaction_amount  decimal
+--);
+--INSERT INTO account_balance VALUES ('acc_1', '2022-01-20', 'credit', 100);
+--INSERT INTO account_balance VALUES ('acc_1', '2022-01-21', 'credit', 500);
+--INSERT INTO account_balance VALUES ('acc_1', '2022-01-22', 'credit', 300);
+--INSERT INTO account_balance VALUES ('acc_1', '2022-01-23', 'credit', 200);
+--INSERT INTO account_balance VALUES ('acc_2', '2022-01-20', 'credit', 500);
+--INSERT INTO account_balance VALUES ('acc_2', '2022-01-21', 'credit', 1100);
+--INSERT INTO account_balance VALUES ('acc_2', '2022-01-22', 'debit', 1000);
+--INSERT INTO account_balance VALUES ('acc_3', '2022-01-20', 'credit', 1000);
+--INSERT INTO account_balance VALUES ('acc_4', '2022-01-20', 'credit', 1500);
+--INSERT INTO account_balance VALUES ('acc_4', '2022-01-21', 'debit', 500);
+--INSERT INTO account_balance VALUES ('acc_5', '2022-01-20', 'credit', 900);
+
+--7. Write a query to return the account no and the transaction date when the account balance reached 1000. And accounts whose balance currently is >= 1000
+
+--with cte as
+--(
+--select *,
+--case when debit_credit = 'credit' then transaction_amount else   -1 * transaction_amount end as balance
+--from account_balance
+--),
+--cte2 as
+--(
+--select *,
+--SUM(balance) over(partition by account_no) as total,
+--SUM(balance) over(partition by account_no order by transaction_date) as current_bal,
+--case when SUM(balance) over(partition by account_no order by transaction_date) > = 1000 then 1 else 0 end as flg
+--from cte
+--)
+--select 
+--account_no, MIN(transaction_date) as transaction_date
+--from cte2
+--where total >= 1000
+--and flg = 1
+--group by account_no
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+--create table parent_child_status
+--(
+--	parent_id	int,
+--	child_id	int,
+--	status		varchar(20)
+--);
+--insert into parent_child_status values (1, 3, 'Active');
+--insert into parent_child_status values (1, 4, 'InActive');
+--insert into parent_child_status values (1, 5, 'Active');
+--insert into parent_child_status values (1, 6, 'InActive');
+--insert into parent_child_status values (2, 7, 'Active');
+--insert into parent_child_status values (2, 8, 'InActive');
+--insert into parent_child_status values (3, 9, 'Inactive');
+--insert into parent_child_status values (4, 10, 'Inactive');
+--insert into parent_child_status values (4, 11, 'Active');
+--insert into parent_child_status values (5, 12, 'InActive');
+--insert into parent_child_status values (5, 13, 'InActive');
+
+
+--The status column in input table depicts the status of child. 
+--If the parent has atleast one child in "Active" status then we need to report parent as "Active" status (Ex: parent_id 1,2, 4). 
+--If none of the child is "Active" for a Parent then we need to report the parent as "InActive" (Ex: parent_id 3,5). 
+
+--with cte as
+--(
+--select 
+--parent_id,
+--sum(case when status = 'active' then 1 else 0 end) as flg
+--from parent_child_status
+--group by parent_id
+--)
+--select 
+--parent_id,
+--case when flg>0 then 'Active' else 'Inactive' end as Status
+--from cte
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--create table Exam (
+--Id int, English int,
+--Maths int, Science int,
+--Geography int,History int,
+--Sanskrit int)
+
+--Insert into Exam Values (1,85,99,92,86,86,99)
+--Insert into Exam Values (2,81,82,83,86,95,96)
+--Insert into Exam Values (3,76,55,76,76,56,76)
+--Insert into Exam Values (4,84,84,84,84,84,84)
+--Insert into Exam Values (5,83,99,45,88,75,90)
+
+
+--9. Calculate the percentage of results using the best of the five rule.You must take the top five grades for each student and calculate the percentage.
+--with cte as
+--(
+--select * from 
+--(select *  from exam) as base_table
+--unpivot 
+--(marks for subjects in (English,Maths,Science,Geography,History,Sanskrit)
+--) a
+--),
+--cte2 as(
+--select *,
+--ROW_NUMBER() over(partition by id order by marks desc) as rn
+--from cte
+--)
+--select 
+--id,
+--SUM(marks) as total_marks,
+--SUM(marks) * 1.0 / 500 * 100 as perc
+--from cte2
+--where rn <=5
+--group by id
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--create table club(
+--club_id int,
+--member_id int,
+--rewards varchar(20));
+
+--insert into club
+--values(1001,210, null),(1001,211,'MM:CI'),(1002,215,'CD:CI:CM'),
+--(1002,216,'CL:CM'),(1002,217,'MM:CM'),(1003,255,null),
+--(1001,216,'CO:CD:CL:MM'),(1002,210,null)
+
+--10.Club Table has three columns namely Club _ IO, Member_id and Rewards .
+--Same member can be a part of different club. The 'rewards' column has different rewards. For these awards are as follows
+--MM -0.5 , CI - 0.5, CO- 0.5, CD - 1, CL-I, CM - 1
+--Write a SQL query to find the total points scored by each club.
+
+
+--with cte as
+--(
+--select *
+--from club
+--outer apply string_split(rewards,':')
+--),
+--cte2 as
+--(
+--select 
+--club_id,
+--case when value = 'MM' then 0.5
+--           when value = 'CI'  then  0.5
+--		   when value = 'CD' then 1
+--		   when value = 'CM' then 1
+--		   when value = 'CL' then 1
+--		   when value = 'CO' then 0.5
+--		   else 0 end as Points
+--from cte
+--)
+--select 
+--club_id, SUM(Points) as Total_Points
+--from cte2
+--group by club_id
