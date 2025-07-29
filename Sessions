@@ -1,0 +1,94 @@
+--CREATE TABLE events ( pid INT, year INT ) 
+
+--INSERT INTO events VALUES (1, 2019), (1, 2020), (1, 2021), (2, 2022), (2, 2021),(3, 2019), (3, 2021), (3, 2022)
+
+
+--1. Find events with 3 or more consecutive years for each pid
+
+--with cte as
+--(
+--select *,
+--(year -ROW_NUMBER() over(partition by pid order by year)) as new_yr
+--from events
+--)
+--select 
+--pid,COUNT(*) as cnt
+--from cte
+--group by pid, new_yr
+--having COUNT(*)>=3
+
+-----------------------------------------------------------------------------------------------------------------------
+
+--CREATE TABLE emps_tbl (emp_name VARCHAR(50), dept_id INT, salary INT);
+
+--INSERT INTO emps_tbl VALUES ('Siva', 1, 30000), ('Ravi', 2, 40000), ('Prasad', 1, 50000), ('Sai', 2, 20000), ('Anna', 2, 10000);
+
+--2. Find department wise minimum salary empname and maximum salary empname .
+
+--with cte as
+--(
+--select *,
+--DENSE_RANK() over(partition by dept_id order by salary desc) as mx,
+--DENSE_RANK() over(partition by dept_id order by salary ) as mn
+--from emps_tbl
+--)
+--select 
+--dept_id,
+--max(case when mx =1 then emp_name end) as max_sal_empname,
+--max(case when mn =1 then emp_name end) as mix_sal_empname
+--from cte
+--where mx = 1 or mn = 1
+--group by dept_id
+
+-----------------------------------------------------------------------------------------------------------------------
+--create table students(sname varchar(50), sid varchar(50), marks int)
+
+--insert into students values('A','X',75),('A','Y',75),('A','Z',80),('B','X',90),('B','Y',91),('B','Z',75)
+
+--3. Find out the total marks of top 2 subjects based on marks.
+
+--with cte as
+--(
+--select *,
+--row_number() over(partition by sname order by marks desc) as dr
+--from students
+--)
+--select 
+--sname, SUM(marks) as total
+--from cte
+--where dr <=2
+--group by sname
+-----------------------------------------------------------------------------------------------------------------------------------
+--CREATE TABLE emp_tbl (id datetime, empid int)
+
+--INSERT INTO emp_tbl VALUES ('2024-01-13 09:25:00', 10),('2024-01-13 19:35:00', 10),('2024-01-16 09:10:00', 10),
+--('2024-01-16 18:10:00', 10),('2024-02-11 09:07:00', 10),('2024-02-11 19:20:00', 10),('2024-02-17 08:40:00', 17),
+--('2024-02-17 18:04:00', 17),('2024-03-23 09:20:00', 10),('2024-03-23 18:30:00', 10)
+
+--4.Find Total Weekend working hours
+
+--with cte as
+--(
+--select 
+--empid,day(id) as day,
+--DATEDIFF(MINUTE,min(id),max(id)) / 60.0 as hrs
+--from emp_tbl
+--where DATEPART(dw,id)  in (1,7)
+--group by day(id),empid
+--)
+--select 
+--empid,SUM(hrs) as total_hr
+--from cte
+--group by empid
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+--create table customer_tbl (id int, email varchar(50))
+--insert into customer_tbl values (1,'abc@gmail.com'),(2,'xyz@hotmail.com'),
+--(3,'pqr@outlook.com')
+
+--5.Find out the domain name
+
+--select *,
+--SUBSTRING(email,charindex('@',email)+1,LEN(email)) as domian
+--from customer_tbl
