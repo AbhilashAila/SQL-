@@ -1,0 +1,242 @@
+--create database Target_50_Quires
+
+--use Target_50_Quires
+
+--------------------------------------------------------------------------------------------
+
+--CREATE TABLE ItemPrice
+--(
+--ItemId INT,
+--MonthNo INT,
+--Price INT
+--);
+
+--INSERT INTO ItemPrice
+--VALUES 
+--(100,1,26),
+--(100,2,29),
+--(100,3,21),
+--(100,4,24),
+--(101,1,67),
+--(101,2,65),
+--(101,3,69),
+--(101,4,68);
+
+--1. Price Trend Insights: First and Last Month Price Analysis
+
+--select *,
+--FIRST_VALUE(Price) over(partition by itemid order by monthno) as First_Transaction,
+--LAST_VALUE(Price) over(partition by itemid order by monthno rows between unbounded preceding and unbounded following ) as Last_Transaction
+--from ItemPrice
+
+
+--WITH RankedPrices AS (
+--    SELECT *,
+--        ROW_NUMBER() OVER (PARTITION BY itemid ORDER BY monthno ASC) AS rn_asc,
+--        ROW_NUMBER() OVER (PARTITION BY itemid ORDER BY monthno DESC) AS rn_desc
+--    FROM ItemPrice
+--),
+--FirstAndLast AS (
+--    SELECT 
+--        itemid,
+--        monthno,
+--        price,
+--        CASE WHEN rn_asc = 1 THEN price END AS First_Transaction,
+--        CASE WHEN rn_desc = 1 THEN price END AS Last_Transaction
+--    FROM RankedPrices
+--)
+--SELECT 
+--    itemid,
+--    MIN(First_Transaction) AS First_Transaction,
+--    MAX(Last_Transaction) AS Last_Transaction
+--FROM FirstAndLast
+--GROUP BY itemid;
+
+--------------------------------------------------------------------------------------------
+--CREATE TABLE Orders (
+--    OrderID VARCHAR(10) PRIMARY KEY,
+--    CustomerID VARCHAR(10) NOT NULL,
+--    OrderDate DATETIME NOT NULL,
+--    Region VARCHAR(20) NULL,
+--    OrderValue DECIMAL(10, 2) NOT NULL
+--);
+
+
+--INSERT INTO Orders (OrderID, CustomerID, OrderDate, Region, OrderValue) VALUES
+--('O1001', 'C001', '2023-01-10 00:00:00.000', 'North', 100.00),
+--('O1002', 'C001', '2023-02-15 00:00:00.000', NULL, 120.00),
+--('O1003', 'C001', '2023-03-20 00:00:00.000', NULL, 150.00),
+--('O1005', 'C002', '2023-01-25 00:00:00.000', 'South', 250.00),
+--('O1006', 'C002', '2023-02-10 00:00:00.000', NULL, 180.00),
+--('O1007', 'C003', '2023-03-01 00:00:00.000', 'East', 220.00),
+--('O1008', 'C003', '2023-03-15 00:00:00.000', NULL, 210.00),
+--('O1009', 'C003', '2023-04-01 00:00:00.000', NULL, 190.00);
+
+--2. Customer Data Enrichment Using Last Known Value | Forward Filling SQL
+
+--with cte as
+--(
+--select 
+--CustomerID,Min(Region) as Region
+--from Orders
+--group by CustomerID
+--)
+--select 
+--a.CustomerID,b.OrderDate,b.OrderValue,a.Region
+--from cte a
+--join 
+--Orders b
+--on a.CustomerID = b.CustomerID
+
+
+--select 
+--OrderID,CustomerID,OrderDate,OrderValue,
+--FIRST_VALUE(Region) over(partition by CustomerID order by OrderID) as Region
+--from Orders
+
+--with cte as
+--(
+--select 
+--OrderID,CustomerID,OrderDate,OrderValue,region,
+--COUNT(Region) over(Partition by 'Hi' order by OrderID ) cnt
+--from Orders
+--)
+--select 
+--OrderID,CustomerID,OrderDate,OrderValue,
+--MIN(Region) over(partition by CustomerID order by cnt) as Region
+--from cte
+
+--------------------------------------------------------------------------------------------
+--CREATE TABLE customer_territory (
+--    cust_id VARCHAR(10),
+--    territory_id VARCHAR(10)
+--);
+
+--INSERT INTO customer_territory (cust_id, territory_id) VALUES
+--('C001',  'T001'),
+--('C0011', 'T001'),
+--('C002',  'T002'),
+--('C003',  'T003'),
+--('C004',  'T004');
+
+--CREATE TABLE order_details (
+--    cust_id VARCHAR(10),
+--    prod_sku_id VARCHAR(10),
+--    order_date DATETIME,
+--    order_value INT,
+--    order_id VARCHAR(10) PRIMARY KEY
+--);
+
+--INSERT INTO order_details (cust_id, prod_sku_id, order_date, order_value, order_id) VALUES
+--('C001',  'P100', '2021-07-15 00:00:00.000', 100, 'O1001'),
+--('C0011', 'P100', '2021-07-17 00:00:00.000', 120, 'O1002'),
+--('C002',  'P101', '2021-07-20 00:00:00.000', 200, 'O1003'),
+--('C001',  'P100', '2021-10-05 00:00:00.000', 150, 'O1004'),
+--('C002',  'P101', '2021-10-10 00:00:00.000', 250, 'O1005'),
+--('C003',  'P102', '2021-08-22 00:00:00.000', 180, 'O1006'),
+--('C004',  'P103', '2021-08-27 00:00:00.000', 220, 'O1007'),
+--('C003',  'P102', '2021-11-30 00:00:00.000', 210, 'O1008'),
+--('C0011', 'P100', '2021-12-07 00:00:00.000',  90, 'O1009'),
+--('C001',  'P100', '2021-04-05 00:00:00.000', 150, 'O1010'),
+--('C002',  'P101', '2021-05-10 00:00:00.000', 250, 'O1011'),
+--('C003',  'P102', '2022-01-22 00:00:00.000', 180, 'O1012'),
+--('C004',  'P103', '2022-01-27 00:00:00.000', 220, 'O1013');
+
+--3. Tracking Territory-Level Sales Momentum Across Quarters Q3 and Q4 2021
+
+--with cte as
+--(
+--select 
+--ct.territory_id,
+--sum(od.order_value) total,
+--DATEPART(quarter,order_date) as Qtr,
+--Year(order_date)  as Year
+--from customer_territory ct
+--join 
+--order_details od
+--on ct.cust_id = od.cust_id
+--where year(order_date) = 2021 and DATEPART(quarter,order_date)in (3,4)
+--group by ct.territory_id,year(order_date),DATEPART(quarter,order_date)
+--),
+--cte2 as
+--(
+--select 
+--territory_id,
+--Qtr,
+--Year,
+--total,
+--lag(total) over(partition by territory_id order by qtr,year) as prev_yr_sales
+--from cte
+--)
+--select 
+--territory_id,
+--(total - prev_yr_sales) * 100.0 /prev_yr_sales as growth
+--from cte2
+--where qtr = 4
+
+--------------------------------------------------------------------------------------------
+
+--CREATE TABLE user_activity (
+--    user_id INT,
+--    entry_time DATETIME,
+--    exit_time DATETIME
+--);
+
+--INSERT INTO user_activity (user_id, entry_time, exit_time) VALUES
+--(1, '2024-03-01 08:05:00', '2024-03-01 09:30:00'),
+--(2, '2024-03-01 08:10:00', '2024-03-01 09:15:00'),
+--(1, '2024-03-01 10:00:00', '2024-03-01 11:45:00'),
+--(3, '2024-03-01 08:30:00', '2024-03-01 10:00:00'),
+--(2, '2024-03-01 09:00:00', '2024-03-01 10:30:00'),
+--(3, '2024-03-01 10:30:00', '2024-03-01 12:00:00');
+
+--4. User Entry-Exit Temporal Analysis
+
+--select 
+--user_id,
+--MIN(entry_time) as entry_time,
+--MAX(exit_time) as exit_time
+--from user_activity
+--where entry_time >= '2024-03-01 08 : 00 : 00' and exit_time <=  '2024-03-01 18 : 00 : 00' 
+--group by user_id
+
+
+--------------------------------------------------------------------------------------------
+--CREATE TABLE Transactions (
+--    TransactionID INT PRIMARY KEY,
+--    TransactionDate DATE,
+--    Amount DECIMAL(10, 2),
+--    TransactionType VARCHAR(10)
+--);
+
+--INSERT INTO Transactions (TransactionID, TransactionDate, Amount, TransactionType)
+--VALUES 
+--    (1, '2024-03-01', 100.00, 'Credit'),
+--    (2, '2024-03-02', 50.00, 'Debit'),
+--    (3, '2024-03-02', 200.00, 'Credit'),
+--    (4, '2024-03-02', 75.00, 'Debit'),
+--    (5, '2024-03-05', 150.00, 'Credit'),
+--    (6, '2024-03-05', 90.00, 'Debit'),
+--    (7, '2024-03-09', 200.00, 'Credit'),
+--    (8, '2024-03-10', 100.00, 'Debit'),
+--    (9, '2024-03-12', 150.00, 'Credit'),
+--    (10, '2024-03-12', 90.00, 'Debit'),
+--    (11, '2024-03-12', 200.00, 'Credit'),
+--    (12, '2024-03-12', 100.00, 'Debit');
+
+--5. Calculate Daily Running Balances from Credit and Debit Transactions
+
+--with cte as
+--(
+--select 
+--Transactiondate,
+--sum(case when TransactionType = 'Credit' then Amount else -1 * Amount end) as Total_Amt
+--from Transactions
+--group by TransactionDate
+--)
+--select 
+--TransactionDate,
+--sum(Total_Amt) over(order by TransactionDate) as cummulative_balance
+--from cte
+
+--------------------------------------------------------------------------------------------
