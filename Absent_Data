@@ -1,0 +1,476 @@
+--create database absent_data
+
+--use absent_data
+
+--CREATE TABLE sales(
+--cust_id VARCHAR(20),
+--sale_date DATE,
+--sale_amount DECIMAL(10,2)
+--);
+
+--INSERT INTO sales (cust_id,sale_date,sale_amount) VALUES
+--('cust001','2023-01-15',5000.00),
+--('cust001','2023-05-20',3200.00),
+--('cust001','2023-09-05',4500.00),
+--('cust001','2024-02-10',5500.00),
+--('cust001','2024-06-12',3300.00),
+--('cust002','2023-02-10',1500.00),
+--('cust002','2023-03-22',1800.00),
+--('cust002','2023-11-11',2200.00),
+--('cust002','2024-04-15',2700.00),
+--('cust002','2024-07-21',1900.00),
+--('cust003','2023-04-18',7000.00),
+--('cust003','2023-07-25',6500.00),
+--('cust003','2023-12-02',8000.00),
+--('cust003','2024-01-05',9000.00),
+--('cust003','2024-08-18',7500.00),
+--('cust004','2023-02-05',900.00),
+--('cust004','2023-08-09',1100.00),
+--('cust004','2023-10-12',1200.00),
+--('cust004','2024-03-05',1500.00),
+--('cust004','2024-05-22',1300.00),
+--('cust005','2023-03-14',6000.00),
+--('cust005','2023-05-19',7200.00),
+--('cust005','2023-09-25',6800.00),
+--('cust005','2024-04-20',8000.00),
+--('cust005','2024-06-14',7800.00),
+--('cust006','2023-01-07',3000.00),
+--('cust006','2023-06-10',3400.00),
+--('cust006','2023-11-29',3900.00),
+--('cust006','2024-02-15',4500.00),
+--('cust006','2024-08-11',4700.00),
+--('cust007','2023-02-25',2500.00),
+--('cust007','2023-04-30',2700.00),
+--('cust007','2023-08-15',2900.00),
+--('cust007','2024-03-09',3100.00),
+--('cust007','2024-09-21',3500.00),
+--('cust008','2023-03-09',8000.00),
+--('cust008','2023-07-18',7500.00),
+--('cust008','2023-12-21',7800.00),
+--('cust008','2024-01-25',8200.00),
+--('cust008','2024-07-05',7700.00);
+
+
+
+--1.  Find the Top 25% Customers Sales in the last year
+
+--with cte as
+--(
+--select 
+--cust_id,
+--SUM(sale_amount) as total
+--from sales
+--where YEAR(sale_date) = (select max(year(sale_date)) from sales) -1
+--group by cust_id
+--),
+--cte2 as
+--(
+--select 
+--cust_id,
+--total,
+--PERCENT_RANK() over(order by total desc) as percent_total
+--from cte
+--)
+--select 
+--cust_id,
+--total
+--from cte2
+--where percent_total < = 0.25
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--CREATE TABLE properties(
+--city VARCHAR(50),
+--state VARCHAR(50),
+--streetname VARCHAR(100),
+--market_price DECIMAL(12,2)
+--);
+
+--INSERT INTO properties (city,state,streetname,market_price) VALUES
+--('New York','NY','5th Avenue',950000.00),
+--('New York','NY','Broadway',870000.00),
+--('Los Angeles','CA','Sunset Blvd',720000.00),
+--('Los Angeles','CA','Hollywood Blvd',680000.00),
+--('Chicago','IL','Michigan Ave',600000.00),
+--('Chicago','IL','State St',550000.00),
+--('San Francisco','CA','Market St',1100000.00),
+--('San Francisco','CA','Mission St',1050000.00),
+--('Houston','TX','Main St',400000.00),
+--('Houston','TX','Westheimer Rd',420000.00);
+
+--2. Find all cities where the average market price is higher than the national average market price.
+
+--select 
+--city,
+--AVG(market_price) as avg_city_price
+--from properties
+--group by city
+--having AVG(market_price)  > (select avg(market_price) from properties)
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--CREATE TABLE daily_sales(
+--product_id INT,
+--sale_date DATE,
+--sales_amount DECIMAL(10,2)
+--);
+
+--INSERT INTO daily_sales (product_id,sale_date,sales_amount) VALUES
+--(101,'2024-01-01',100),
+--(101,'2024-01-02',150),
+--(101,'2024-01-03',200),
+--(101,'2024-01-04',250),
+--(101,'2024-01-05',300),
+--(101,'2024-01-06',350),
+--(101,'2024-01-07',400),
+--(101,'2024-01-08',450),
+--(101,'2024-01-09',500),
+--(101,'2024-01-10',550);
+
+
+--3. calculate the 7-day moving average of sales for each product ordered by sale date
+
+--select 
+--product_id,
+--sale_date,
+--sales_amount,
+--AVG(sales_amount) over(partition by product_id order by sale_date rows between 6 preceding and current row) as mvg_avg
+--from daily_sales
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--CREATE TABLE late_orders(
+--order_id INT,
+--provider_id INT,
+--order_date DATE,
+--delivery_date DATE
+--);
+
+--INSERT INTO late_orders (order_id,provider_id,order_date,delivery_date) VALUES
+--(1,101,'2024-01-01','2024-01-05'),
+--(2,101,'2024-01-10','2024-01-12'),
+--(3,101,'2024-02-01','2024-02-10'),
+--(4,101,'2024-03-15','2024-03-15'),
+--(5,101,'2024-03-20','2024-03-25'),
+--(6,102,'2024-01-02','2024-01-02'),
+--(7,102,'2024-02-05','2024-02-08'),
+--(8,102,'2024-02-20','2024-02-19'),
+--(9,102,'2024-03-10','2024-03-15'),
+--(10,102,'2024-03-18','2024-03-22'),
+--(11,103,'2024-01-15','2024-01-20'),
+--(12,103,'2024-01-20','2024-01-25'),
+--(13,103,'2024-02-01','2024-02-01'),
+--(14,103,'2024-02-10','2024-02-12'),
+--(15,103,'2024-03-05','2024-03-08'),
+--(16,104,'2024-01-05','2024-01-10'),
+--(17,104,'2024-02-14','2024-02-14'),
+--(18,104,'2024-02-28','2024-03-05'),
+--(19,104,'2024-03-01','2024-03-01'),
+--(20,104,'2024-03-12','2024-03-18');
+
+--4. Calculate the percentage of late deliveries 
+
+--with cte as
+--(
+--select 
+--order_id,
+--provider_id,
+--DATEDIFF(day,order_date,delivery_date) as days,
+--case when DATEDIFF(day,order_date,delivery_date) >3 then 1 else 0 end as is_late
+--from late_orders
+--)
+--select 
+--provider_id,
+--COUNT(order_id) as total_orders,
+--SUM(is_late) as late_orders,
+--SUM(is_late) *1.0 / COUNT(order_id) * 100 as late_percentage
+--from cte
+--group by provider_id
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--CREATE TABLE transactions(
+--customer_id INT,
+--transaction_date DATE,
+--amount DECIMAL(10,2)
+--);
+
+--INSERT INTO transactions (customer_id,transaction_date,amount) VALUES
+--(1,'2023-01-10',250.00),
+--(1,'2023-05-15',300.00),
+--(1,'2024-02-20',400.00),
+--(2,'2023-03-12',150.00),
+--(2,'2023-07-25',200.00),
+--(2,'2024-01-05',180.00),
+--(3,'2023-04-18',500.00),
+--(3,'2023-08-10',550.00),
+--(3,'2024-03-01',600.00),
+--(4,'2023-02-20',100.00),
+--(4,'2024-01-15',120.00),
+--(4,'2024-03-20',140.00),
+--(5,'2023-06-30',700.00),
+--(5,'2024-02-25',720.00),
+--(5,'2024-03-28',750.00);
+
+--5. Write a SQL query to find each customer's most recent transaction date along with the transaction amount
+
+--with cte as
+--(
+--select 
+--customer_id,
+--transaction_date,
+--amount,
+--DENSE_RANK() over(partition by customer_id order by transaction_date) as recent_trans
+--from transactions
+--)
+--select * from cte
+--where recent_trans = 1
+
+--select 
+--customer_id,
+--MIN(transaction_date) as recent_transaction_date
+--from transactions
+--group by customer_id
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--CREATE TABLE affiliate (
+--    affiliate_id INT,
+--    affiliate_name VARCHAR(50)
+--);
+
+--CREATE TABLE affiliate_transactions (
+--    transaction_id INT,
+--    affiliate_id INT,
+--    transaction_date DATE,
+--    amount DECIMAL(10,2)
+--);
+
+--INSERT INTO affiliate VALUES
+--(1,'AffiliateA'),
+--(2,'AffiliateB'),
+--(3,'AffiliateC');
+
+--INSERT INTO affiliate_transactions VALUES
+--(101,1,'2023-01-10',200.00),
+--(102,1,'2023-02-14',250.00),
+--(103,1,'2023-03-18',300.00),
+--(104,1,'2023-04-20',150.00),
+--(105,1,'2023-05-22',100.00),
+--(106,1,'2023-06-25',400.00),
+--(107,1,'2024-01-15',500.00),
+--(201,2,'2023-02-01',120.00),
+--(202,2,'2023-03-05',180.00),
+--(203,2,'2023-05-07',200.00),
+--(204,2,'2023-06-09',300.00),
+--(205,2,'2023-08-12',250.00),
+--(206,2,'2024-01-05',400.00),
+--(207,2,'2024-03-02',350.00),
+--(301,3,'2023-01-12',500.00),
+--(302,3,'2023-02-14',450.00),
+--(303,3,'2023-04-18',600.00),
+--(304,3,'2023-07-20',550.00),
+--(305,3,'2023-09-22',700.00),
+--(306,3,'2024-02-25',800.00),
+--(307,3,'2024-03-28',900.00);
+
+--6. Write a SQL query to calculate the total sales amount of the last 5 transactions for each affiliate.
+ 
+--select 
+--affiliate_name,
+--SUM(amount) as total
+--from
+--(
+--select 
+--a.affiliate_id,
+--a.affiliate_name,
+--t.transaction_id,
+--t.transaction_date,
+--t.amount,
+--ROW_NUMBER() over(partition by a.affiliate_id order by t.transaction_date desc) as recency
+--from affiliate a
+--join
+--affiliate_transactions t
+--on a.affiliate_id = t.affiliate_id
+--)
+--a
+--where recency <=5
+--group by affiliate_name
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--CREATE TABLE calls (
+--    id INT,
+--    request_id INT,
+--    created_on DATETIME,
+--    call_duration INT -- in minutes
+--);
+
+--INSERT INTO calls VALUES
+--(1,101,'2024-01-10 09:00:00',5),
+--(2,101,'2024-01-10 10:30:00',8),
+--(3,101,'2024-01-11 14:00:00',7),
+--(4,102,'2024-02-01 08:45:00',12),
+--(5,102,'2024-02-01 09:20:00',15),
+--(6,102,'2024-02-02 11:00:00',10),
+--(7,103,'2024-03-15 10:00:00',4),
+--(8,103,'2024-03-16 12:30:00',6),
+--(9,103,'2024-03-17 15:00:00',5),
+--(10,104,'2024-04-05 09:15:00',9),
+--(11,104,'2024-04-06 11:45:00',7),
+--(12,104,'2024-04-06 13:10:00',6),
+--(13,105,'2024-05-10 10:00:00',20),
+--(14,105,'2024-05-11 14:00:00',18),
+--(15,105,'2024-05-12 16:00:00',15),
+--(16,106,'2024-06-20 08:00:00',3),
+--(17,106,'2024-06-21 10:15:00',4),
+--(18,106,'2024-06-21 12:00:00',5),
+--(19,107,'2024-07-25 09:00:00',14),
+--(20,107,'2024-07-26 11:00:00',12);
+
+
+--7. Find the average call duration of the first call for each request.
+
+--with cte as
+--(
+--select 
+--request_id,
+--created_on,
+--call_duration,
+--ROW_NUMBER() over(partition by request_id order by created_on )  as first_call
+--from calls
+--)
+--select 
+--avg(call_duration) as avg_first_call
+--from cte
+--where first_call = 1
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--CREATE TABLE SalesData (
+--    category NVARCHAR(50),
+--    product NVARCHAR(50),
+--    sale_amount DECIMAL(10,2)
+--);
+
+--INSERT INTO SalesData (category, product, sale_amount) VALUES
+--('Electronics','Laptop',80000),
+--('Electronics','Smartphone',60000),
+--('Electronics','Tablet',30000),
+--('Furniture','Chair',15000),
+--('Furniture','Table',25000),
+--('Furniture','Sofa',40000),
+--('Clothing','Shirt',10000),
+--('Clothing','Jeans',15000),
+--('Clothing','Jacket',20000),
+--('Electronics','Laptop',90000),
+--('Electronics','Smartphone',70000),
+--('Furniture','Table',20000),
+--('Furniture','Chair',12000),
+--('Clothing','Shirt',8000),
+--('Clothing','Jacket',25000);
+
+--8. Calculate the percentage of total sales by category and product.
+
+--select 
+--category,
+--product,
+--SUM(sale_amount) as total_amt,
+--SUM(sale_amount) * 1.0  / (select sum(sale_amount) from SalesData) * 100 as perc_total
+--from SalesData
+--group by category,product
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--CREATE TABLE purchases(
+--    id INT,
+--    created_at DATE,
+--    value DECIMAL(10,2),
+--    purchase_id VARCHAR(20)
+--);
+
+--INSERT INTO purchases VALUES
+--(1,'2023-01-05',200.00,'pur001'),
+--(2,'2023-01-18',150.00,'pur002'),
+--(3,'2023-02-03',300.00,'pur003'),
+--(4,'2023-02-25',400.00,'pur004'),
+--(5,'2023-03-02',250.00,'pur005'),
+--(6,'2023-03-21',500.00,'pur006'),
+--(7,'2023-04-10',600.00,'pur007'),
+--(8,'2023-04-25',350.00,'pur008'),
+--(9,'2023-05-05',700.00,'pur009'),
+--(10,'2023-05-28',450.00,'pur010'),
+--(11,'2023-06-08',550.00,'pur011'),
+--(12,'2023-06-27',800.00,'pur012'),
+--(13,'2023-07-05',300.00,'pur013'),
+--(14,'2023-07-29',200.00,'pur014'),
+--(15,'2023-08-03',650.00,'pur015'),
+--(16,'2023-08-25',900.00,'pur016'),
+--(17,'2023-09-04',400.00,'pur017'),
+--(18,'2023-09-26',500.00,'pur018'),
+--(19,'2023-10-02',750.00,'pur019'),
+--(20,'2023-10-20',650.00,'pur020'),
+--(21,'2023-11-08',300.00,'pur021'),
+--(22,'2023-11-27',450.00,'pur022'),
+--(23,'2023-12-04',600.00,'pur023'),
+--(24,'2023-12-28',800.00,'pur024'),
+--(25,'2024-01-03',700.00,'pur025'),
+--(26,'2024-01-18',300.00,'pur026'),
+--(27,'2024-02-06',500.00,'pur027'),
+--(28,'2024-02-22',900.00,'pur028'),
+--(29,'2024-03-02',400.00,'pur029'),
+--(30,'2024-03-20',750.00,'pur030');
+
+
+ --9.Month-over-Month (MoM) change
+
+ --with cte as
+ --(
+ --select 
+ --FORMAT(created_at,'yyyy_MM') as Month_Year,
+ --SUM(value) as Total
+ --from purchases
+ --group by  FORMAT(created_at,'yyyy_MM')
+ --)
+ --select 
+ --Month_Year,
+ --Total,
+ --LAG(total,1) over(order by Month_Year ) as Prev_Month,
+ --(Total-LAG(total,1) over(order by Month_Year ) * 1.0) / LAG(total,1) over(order by Month_Year )  * 100 as MOM_Change
+ --from cte
+
+ ------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--CREATE TABLE online_activity(
+--    starttimestamp DATETIME,
+--    endtimestamp DATETIME,
+--    user_count INT,
+--    device VARCHAR(20)
+--);
+
+--INSERT INTO online_activity VALUES
+--('2024-08-01 08:00:00','2024-08-01 09:30:00',120,'mobile'),
+--('2024-08-01 09:45:00','2024-08-01 11:45:00',150,'desktop'),
+--('2024-08-01 12:00:00','2024-08-01 14:00:00',200,'mobile'),
+--('2024-08-01 14:30:00','2024-08-01 16:00:00',250,'tablet'),
+--('2024-08-01 16:15:00','2024-08-01 18:45:00',300,'mobile'),
+--('2024-08-01 19:00:00','2024-08-01 21:30:00',280,'desktop'),
+--('2024-08-01 22:00:00','2024-08-02 00:30:00',320,'mobile'),
+--('2024-08-02 01:00:00','2024-08-02 03:15:00',290,'tablet'),
+--('2024-08-02 04:00:00','2024-08-02 06:30:00',350,'mobile'),
+--('2024-08-02 07:15:00','2024-08-02 09:30:00',400,'desktop'),
+--('2024-08-02 10:00:00','2024-08-02 12:45:00',420,'mobile'),
+--('2024-08-02 13:30:00','2024-08-02 15:45:00',380,'tablet'),
+--('2024-08-02 16:15:00','2024-08-02 19:00:00',410,'mobile'),
+--('2024-08-02 19:30:00','2024-08-02 21:45:00',370,'desktop'),
+--('2024-08-02 22:15:00','2024-08-03 00:45:00',450,'mobile'),
+--('2024-08-03 01:15:00','2024-08-03 03:30:00',430,'tablet'),
+--('2024-08-03 04:00:00','2024-08-03 07:00:00',480,'mobile'),
+--('2024-08-03 07:30:00','2024-08-03 09:45:00',500,'desktop'),
+--('2024-08-03 10:15:00','2024-08-03 13:00:00',470,'mobile'),
+--('2024-08-03 13:30:00','2024-08-03 16:00:00',490,'tablet');
+
+
+ --10. SQL query to find the single peak online period
+
+ --select top 1 
+ --concat(DATEPART(hour,starttimestamp) ,' to '  ,DATEPART(hour,endtimestamp)) as Period,
+ --sum(user_count) as total_user_count
+ --from online_activity
+ --group by  concat(DATEPART(hour,starttimestamp) ,' to '  ,DATEPART(hour,endtimestamp))
+ --order by total_user_count desc
+
+
