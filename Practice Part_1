@@ -1,0 +1,458 @@
+--create database practice_part1
+
+--use practice_part1
+
+----------------------------------------------------------------------------------------------------------------
+
+
+--CREATE TABLE dbo.emp_attendance
+--(
+--    EmployeeID  VARCHAR(10),
+--    AttendanceDate DATE,
+--    Status VARCHAR(20)
+--);
+
+--INSERT INTO dbo.emp_attendance VALUES('A1', '2024-01-01', 'PRESENT');
+--INSERT INTO dbo.emp_attendance VALUES('A1', '2024-01-02', 'PRESENT');
+--INSERT INTO dbo.emp_attendance VALUES('A1', '2024-01-03', 'PRESENT');
+--INSERT INTO dbo.emp_attendance VALUES('A1', '2024-01-04', 'ABSENT');
+--INSERT INTO dbo.emp_attendance VALUES('A1', '2024-01-05', 'PRESENT');
+--INSERT INTO dbo.emp_attendance VALUES('A1', '2024-01-06', 'PRESENT');
+--INSERT INTO dbo.emp_attendance VALUES('A1', '2024-01-07', 'ABSENT');
+--INSERT INTO dbo.emp_attendance VALUES('A1', '2024-01-08', 'ABSENT');
+--INSERT INTO dbo.emp_attendance VALUES('A1', '2024-01-09', 'ABSENT');
+--INSERT INTO dbo.emp_attendance VALUES('A1', '2024-01-10', 'PRESENT');
+--INSERT INTO dbo.emp_attendance VALUES('A2', '2024-01-06', 'PRESENT');
+--INSERT INTO dbo.emp_attendance VALUES('A2', '2024-01-07', 'PRESENT');
+--INSERT INTO dbo.emp_attendance VALUES('A2', '2024-01-08', 'ABSENT');
+--INSERT INTO dbo.emp_attendance VALUES('A2', '2024-01-09', 'PRESENT');
+--INSERT INTO dbo.emp_attendance VALUES('A2', '2024-01-10', 'ABSENT');
+
+---- 1. Generate a report to showcase the period of presence and absense of each employee as shown in expected output.
+
+--with cte as
+--(
+--select *,
+--ROW_NUMBER() Over(Partition By EmployeeID,status Order by Attendancedate) as rn,
+--DATEADD(DAY,- ROW_NUMBER() Over(Partition By EmployeeID,status Order by Attendancedate asc),AttendanceDate) as dates
+--from emp_attendance
+--)
+--select 
+--EmployeeID,
+--MIN(attendancedate) as Start_Date,
+--MAX(attendancedate) as End_Date,
+--Status
+--from cte
+--group by EmployeeID,Status,dates
+
+
+--------------------------------------------------------------------------------------------------------------
+
+--create table job_positions
+--(
+--	id			int,
+--	title 		varchar(100),
+--	groups 		varchar(10),
+--	levels		varchar(10),
+--	payscale	int,
+--	totalpost	int
+--);
+--insert into job_positions values (1, 'General manager', 'A', 'l-15', 10000, 1);
+--insert into job_positions values (2, 'Manager', 'B', 'l-14', 9000, 5);
+--insert into job_positions values (3, 'Asst. Manager', 'C', 'l-13', 8000, 10);
+
+
+--create table job_employees
+--(
+--	id				int,
+--	name 			varchar(100),
+--	position_id 	int
+--);
+--insert into job_employees values (1, 'John Smith', 1);
+--insert into job_employees values (2, 'Jane Doe', 2);
+--insert into job_employees values (3, 'Michael Brown', 2);
+--insert into job_employees values (4, 'Emily Johnson', 2);
+--insert into job_employees values (5, 'William Lee', 3);
+--insert into job_employees values (6, 'Jessica Clark', 3);
+--insert into job_employees values (7, 'Christopher Harris', 3);
+--insert into job_employees values (8, 'Olivia Wilson', 3);
+--insert into job_employees values (9, 'Daniel Martinez', 3);
+--insert into job_employees values (10, 'Sophia Miller', 3);
+
+---- 2. Each position has a total number of sanctioned posts (totalpost). Some are filled by employees (from job_employees), and the rest are still vacant.
+----      Write an SQL query to list all positions, showing one row per post. If the post is filled, display the employee’s name; if not, show 'Vacant'.
+
+--select 
+--p.id,
+--p.title,
+--p.groups,
+--p.levels,
+--p.payscale,
+--coalesce(e.name,'Vacant') as name
+--from job_positions p
+--cross apply 
+--generate_series(1,p.totalpost)
+--left join
+--(
+--select *,
+--ROW_NUMBER() Over(partition by position_id order by id) as rn
+--from job_employees) e
+--on e.rn =value
+--and e.position_id = p.id
+
+--------------------------------------------------------------------------------------------------------------
+--CREATE TABLE account_balance
+--(
+--    account_no          VARCHAR(20),
+--    transaction_date    DATE,
+--    debit_credit        VARCHAR(10),
+--    transaction_amount  DECIMAL(18,2)
+--);
+
+--INSERT INTO account_balance VALUES ('acc_1', '2022-01-20', 'credit', 100);
+--INSERT INTO account_balance VALUES ('acc_1', '2022-01-21', 'credit', 500);
+--INSERT INTO account_balance VALUES ('acc_1', '2022-01-22', 'credit', 300);
+--INSERT INTO account_balance VALUES ('acc_1', '2022-01-23', 'credit', 200);
+--INSERT INTO account_balance VALUES ('acc_2', '2022-01-20', 'credit', 500);
+--INSERT INTO account_balance VALUES ('acc_2', '2022-01-21', 'credit', 1100);
+--INSERT INTO account_balance VALUES ('acc_2', '2022-01-22', 'debit', 1000)
+--INSERT INTO account_balance VALUES ('acc_3', '2022-01-20', 'credit', 1000);
+--INSERT INTO account_balance VALUES ('acc_4', '2022-01-20', 'credit', 1500);
+--INSERT INTO account_balance VALUES ('acc_4', '2022-01-21', 'debit', 500);
+--INSERT INTO account_balance VALUES ('acc_5', '2022-01-20', 'credit', 900);
+
+-- 3. Write a query to return the account no and the transaction date when the account balance reached 1000.
+--      Please include only those accounts whose balance currently is 1000
+
+
+--with cte as
+--(
+--select 
+--account_no,
+--transaction_date,
+--debit_credit,
+--transaction_amount,
+--case when debit_credit = 'Credit' then transaction_amount else -1 * transaction_amount end as actual_transactions
+--from account_balance
+--),
+--cte2 as
+--(
+--select *,
+--SUM(actual_transactions) Over(partition by account_no order by transaction_date)  current_balance,
+--SUM(actual_transactions) Over(partition by account_no order by (select null))  overall_balance,
+--case when SUM(actual_transactions) Over(partition by account_no order by transaction_date)  >= 1000 then 1 else 0 end as flg
+--from cte
+--)
+--select 
+--account_no,
+--MIN(transaction_date) as transaction_date
+--from cte2
+--where overall_balance >= 1000
+--and  flg = 1
+--group by account_no
+
+--------------------------------------------------------------------------------------------------------------
+--CREATE TABLE SalesData (
+--    Year INT,
+--    Brand VARCHAR(50),
+--    Amount INT
+--);
+
+--INSERT INTO SalesData (Year, Brand, Amount) VALUES
+--(2018, 'Apple',   45000),
+--(2019, 'Apple',   35000),
+--(2020, 'Apple',   75000),
+--(2018, 'Samsung', 15000),
+--(2019, 'Samsung', 20000),
+--(2020, 'Samsung', 25000),
+--(2018, 'Nokia',   21000),
+--(2019, 'Nokia',   17000),
+--(2020, 'Nokia',   14000);
+
+-- 4. Write a query to fecth the record of brand whose amount is increasing every year
+
+--with cte as 
+--(
+--select 
+--Year,
+--Brand,
+--Amount,
+--LAG(Amount,1,Amount - 1) over(partition by Brand order by year) as prev_yr_amount,
+--case when Amount > LAG(Amount,1,Amount - 1) over(partition by Brand order by year) then 1 else 0 end as flg
+--from SalesData
+--)
+--select * from SalesData
+--where Brand not in (select brand from cte where flg = 0)
+
+--------------------------------------------------------------------------------------------------------------
+
+--create table lifts
+--(
+--      id         	  int
+--    , capacity_kg     int
+--);
+
+--insert into lifts values (1, 300);
+--insert into lifts values (2, 350);
+
+--create table lift_passengers
+--(
+--      passenger_name    varchar(50)
+--    , weight_kg     	int
+--	, lift_id			int
+--);
+
+--insert into lift_passengers values ('Rahul', 85, 1);
+--insert into lift_passengers values ('Adarsh', 73, 1);
+--insert into lift_passengers values ('Riti', 95, 1);
+--insert into lift_passengers values ('Dheeraj', 80, 1);
+--insert into lift_passengers values ('Vimal', 83, 2);
+--insert into lift_passengers values ('Neha', 77, 2);
+--insert into lift_passengers values ('Priti', 73, 2);
+--insert into lift_passengers values ('Himanshi', 85, 2);
+
+
+-- 5. The relationship between the LIFT and LIFT_PASSENGERS table is such that multiple passengers can attempt to enter the same lift, but the total
+--weight of the passengers in a lift cannot exceed the lifts' capacity.
+--Your task is to write a SQL query that produces a comma-separated list of passengers who can be accommodated in each lift without exceeding
+--the lift's capacity. The passengers in the list should be ordered by their weight in increasing order.
+
+--with cte as
+--(
+--select 
+--p.lift_id,
+--p.passenger_name,
+--p.weight_kg,
+--l.capacity_kg,
+--SUM(p.weight_kg) over(partition by p.lift_id order by p.weight_kg ) as cumm_wt,
+--case when SUM(p.weight_kg) over(partition by p.lift_id order by p.weight_kg ) <= capacity_kg then 1 else 0 end as flg
+--from lifts l
+--join
+--lift_passengers p
+--on l.id = p.lift_id
+--)
+--select 
+--lift_id,
+--STRING_AGG(passenger_name, ' , ')  as Passengers
+--from cte
+--where flg = 1
+--group by lift_id
+
+--------------------------------------------------------------------------------------------------------------
+
+--CREATE TABLE Employees (
+--    EmpID INT PRIMARY KEY,
+--    EmpName VARCHAR(50),
+--    ManagerID INT NULL,
+--    DeptName VARCHAR(50)
+--);
+
+--INSERT INTO Employees (EmpID, EmpName, ManagerID, DeptName) VALUES
+--(1, 'Amit', NULL, 'HR'),       
+--(2, 'Ravi', 1, 'HR'),
+--(3, 'Sunita', 1, 'HR'),
+--(4, 'Manoj', 1, 'HR'),
+--(5, 'Kiran', 1, 'HR'),
+--(6, 'Divya', 1, 'HR'),
+--(7, 'Meena', 2, 'HR'),
+--(8, 'Rajesh', NULL, 'IT'),     
+--(9, 'Anil', 8, 'IT'),
+--(10, 'Vikram', 8, 'IT'),
+--(11, 'Suresh', 8, 'IT'),
+--(12, 'Ramesh', 8, 'IT'),
+--(13, 'Naresh', 8, 'IT'),
+--(14, 'Pooja', 9, 'IT'),
+--(15, 'Seema', 9, 'IT'),
+--(16, 'Geeta', 9, 'IT'),
+--(17, 'Deepak', 10, 'IT'),
+--(18, 'Mahesh', 10, 'IT'),
+--(19, 'Alok', 11, 'IT'),
+--(20, 'Kavita', 12, 'IT'),
+--(21, 'Arun', NULL, 'Finance'), 
+--(22, 'Prakash', 21, 'Finance'),
+--(23, 'Neha', 21, 'Finance'),
+--(24, 'Swati', 21, 'Finance'),
+--(25, 'Vikas', 21, 'Finance'),
+--(26, 'Rohit', 21, 'Finance'),
+--(27, 'Anita', 22, 'Finance'),
+--(28, 'Sanjay', 23, 'Finance'),
+--(29, 'Komal', 24, 'Finance'),
+--(30, 'Yogesh', 25, 'Finance');
+
+
+--6. Write a SQL query to find the names of managers who directly manage at least five employees in the same department. 
+--     Return the department name and the total number of direct reports for each manager. 
+--     Note - Ensure that only employees from departments with more than 10 total employees are considered in your query.
+
+--select m.EmpName as Mngr_Name, d.DeptName,COUNT(*) as cnt
+--from Employees e
+--join Employees m
+--on e.ManagerID = m.EmpID
+--join
+--(
+--select 
+--DeptName,COUNT(*) as Cnt
+--from Employees
+--group by DeptName
+--having COUNT(*)>10
+--) d
+--on d.DeptName = m.DeptName
+--group by m.EmpName,d.DeptName
+--having COUNT(*)>=5
+
+
+--------------------------------------------------------------------------------------------------------------
+--CREATE TABLE Purchases (
+--    PurchaseID INT PRIMARY KEY,
+--    CustomerID INT,
+--    ProductID INT,
+--    PurchaseDate DATE,
+--    ReturnDate DATE NULL
+--);
+
+--INSERT INTO Purchases (PurchaseID, CustomerID, ProductID, PurchaseDate, ReturnDate) VALUES
+--(1, 101, 201, '2025-08-05', NULL),
+--(2, 101, 202, '2025-08-12', NULL),
+--(3, 101, 203, '2025-08-20', '2025-08-25'),
+--(4, 102, 204, '2025-08-10', NULL),
+--(5, 102, 205, '2025-08-15', NULL),
+--(6, 103, 206, '2025-08-08', '2025-08-12'),
+--(7, 103, 207, '2025-08-18', NULL),
+--(8, 104, 208, '2025-08-22', NULL),
+--(9, 104, 209, '2025-08-28', NULL),
+--(10, 105, 210, '2025-08-30', '2025-09-02');
+
+-- 7. Find customers with successful multiple purchases in the last 1 month. Purchase is considered successful if they are not returned within I week of purchase.
+
+--select 
+--CustomerID
+--from Purchases
+--where PurchaseDate > = DATEADD(month,-1,getdate())
+--and ReturnDate is null
+--or
+--DATEDIFF(day,PurchaseDate,ReturnDate)>7
+
+--------------------------------------------------------------------------------------------------------------
+
+--CREATE TABLE Categories (
+--    CategoryID INT PRIMARY KEY,
+--    CategoryName VARCHAR(50)
+--);
+
+--CREATE TABLE Products (
+--    ProductID INT PRIMARY KEY,
+--    ProductName VARCHAR(100),
+--    Price DECIMAL(10,2),
+--    CategoryID INT FOREIGN KEY REFERENCES Categories(CategoryID)
+--);
+
+--INSERT INTO Categories (CategoryID, CategoryName) VALUES
+--(1, 'Electronics'),
+--(2, 'Clothing'),
+--(3, 'Furniture');
+
+--INSERT INTO Products (ProductID, ProductName, Price, CategoryID) VALUES
+--(101, 'Smartphone', 20000.00, 1),
+--(102, 'Laptop', 55000.00, 1),
+--(103, 'Headphones', 3000.00, 1),
+--(104, 'T-Shirt', 800.00, 2),
+--(105, 'Jeans', 1500.00, 2),
+--(106, 'Sofa', 25000.00, 3),
+--(107, 'Dining Table', 18000.00, 3);
+
+
+-- 8.Write a query to increase the price of all products in the 'Electronics' category by 10%
+
+
+--Update p
+--set p.Price = Price * 1.10
+--from Products p
+--join
+--Categories c
+--on p.CategoryID = c.CategoryID
+--where CategoryName = 'Electronics'
+
+
+--------------------------------------------------------------------------------------------------------------
+--CREATE TABLE Trips (
+--    trip_id INT PRIMARY KEY,
+--    rider_id INT,
+--    city_name VARCHAR(50),
+--    trip_timestamp DATE,
+--    trip_fare_usd DECIMAL(10,2),
+--    state VARCHAR(20)
+--);
+
+--INSERT INTO Trips (trip_id, rider_id, city_name, trip_timestamp, trip_fare_usd, state) VALUES
+--(1, 101, 'New York', '2025-07-01', 25.00, 'SETTLED'),
+--(2, 102, 'New York', '2025-07-02', 30.00, 'SETTLED'),
+--(3, 103, 'New York', '2025-07-08', 40.00, 'SETTLED'),
+--(4, 104, 'New York', '2025-07-10', 20.00, 'SETTLED'),
+--(5, 105, 'Chicago',  '2025-07-03', 15.00, 'SETTLED'),
+--(6, 106, 'Chicago',  '2025-07-09', 25.00, 'SETTLED'),
+--(7, 107, 'Chicago',  '2025-07-15', 35.00, 'SETTLED'),
+--(8, 108, 'Boston',   '2025-07-04', 10.00, 'SETTLED'),
+--(9, 109, 'Boston',   '2025-07-11', 20.00, 'SETTLED'),
+--(10, 110, 'Boston',  '2025-07-18', 30.00, 'SETTLED'),
+--(11, 111, 'New York','2025-07-15', 50.00, 'ERROR'),
+--(12, 112, 'Chicago', '2025-07-20', 45.00, 'CHARGEBACK');
+
+
+--9.  Table trips: trip_id, rider_id, city_name, trip_timestamp, trip_fare_usd, state. 
+--     The state might be one of the following: SETTLED, ERROR, CHARGEBACK. 
+--    Create a query that show weekly percentage of increase or decrease in terms of total trip fare for each city
+
+
+--With Cte as
+--(
+--select 
+--city_name,
+--DATEPART(Year,trip_timestamp) as Yr,
+--DATEPART(Week,trip_timestamp) as Wk,
+--SUM(trip_fare_usd) as Total_Fare
+--from Trips
+--Group By city_name, DATEPART(Year,trip_timestamp),DATEPART(Week,trip_timestamp)
+--)
+--Select 
+--city_name,
+--Wk,
+--Total_Fare,
+--LAG(Total_Fare) Over(Partition by city_name Order By Wk) as Prev_Wk_Fare,
+--(Total_Fare - LAG(Total_Fare) Over(Partition by city_name Order By Wk)) * 1.0 / LAG(Total_Fare) Over(Partition by city_name Order By Wk) * 100 as WOW
+--from Cte
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
+--CREATE TABLE Sales (
+--    EmployeeID INT,
+--    SaleAmount DECIMAL(10,2),
+--    SaleDate DATE
+--);
+
+--INSERT INTO Sales (EmployeeID, SaleAmount, SaleDate) VALUES
+--(101, 5000, '2025-08-05'),
+--(101, 3000, '2025-08-12'),
+--(102, 7000, '2025-08-07'),
+--(102, 2000, '2025-08-18'),
+--(103, 4000, '2025-08-09'),
+--(103, 3500, '2025-08-20'),
+--(104, 1000, '2025-08-10'),
+--(105, 6000, '2025-08-15');
+
+
+--10. Write a SQL query to identify employees who sold more than the average sales of all employees last month.
+
+
+--Select 
+--EmployeeID, SUM(SaleAmount) as Total_Sales
+--from Sales
+--Where SaleDate >= DATEADD(MONTH, -1 , GETDATE()) 
+--Group By EmployeeID
+--Having SUM(SaleAmount) > (
+--                                                         Select AVG(Total) From 
+--														 (
+--                                                        select EmployeeID , SUM(SaleAmount) as Total
+--														from sales
+--														Where SaleDate >= DATEADD(MONTH, -1 , GETDATE()) 
+--														Group By EmployeeID)a
+--														)
