@@ -1,0 +1,148 @@
+--CREATE TABLE SalesInfo (
+--    SaleID INT IDENTITY(1,1) PRIMARY KEY,
+--    SaleDate DATE,
+--    Region VARCHAR(20),
+--    Product VARCHAR(50),
+--    SalesPerson VARCHAR(50),
+--    Amount DECIMAL(10,2)
+--);
+
+
+--INSERT INTO SalesInfo (SaleDate, Region, Product, SalesPerson, Amount)
+--VALUES
+--('2024-01-05', 'North', 'Laptop', 'Amit', 700),
+--('2024-01-06', 'South', 'Mouse', 'Priya', 200),
+--('2024-01-07', 'East', 'Keyboard', 'Ravi', 350),
+--('2024-01-07', 'West', 'Monitor', 'Vikram', 800),
+--('2024-01-10', 'North', 'Headphones', 'Amit', 550),
+--('2024-01-12', 'East', 'Mouse', 'Priya', 180),
+--('2024-01-13', 'South', 'Laptop', 'Sneha', 900),
+--('2024-01-15', 'West', 'Monitor', 'Ravi', 700),
+--('2024-01-18', 'North', 'Keyboard', 'Amit', 300),
+--('2024-01-22', 'East', 'Mouse', 'Vikram', 250),
+--('2024-01-25', 'North', 'Monitor', 'Ravi', 850),
+--('2024-02-01', 'South', 'Laptop', 'Sneha', 1000),
+--('2024-02-03', 'West', 'Mouse', 'Priya', 150),
+--('2024-02-04', 'North', 'Keyboard', 'Amit', 400),
+--('2024-02-06', 'East', 'Monitor', 'Vikram', 950),
+--('2024-02-07', 'West', 'Laptop', 'Sneha', 1200),
+--('2024-02-08', 'South', 'Mouse', 'Ravi', 200),
+--('2024-02-09', 'North', 'Headphones', 'Amit', 600),
+--('2024-02-10', 'East', 'Laptop', 'Priya', 1050),
+--('2024-02-12', 'West', 'Keyboard', 'Ravi', 300),
+--('2024-02-15', 'South', 'Laptop', 'Sneha', 1100),
+--('2024-02-18', 'North', 'Monitor', 'Vikram', 900),
+--('2024-02-20', 'East', 'Mouse', 'Amit', 220),
+--('2024-02-22', 'West', 'Laptop', 'Ravi', 950),
+--('2024-03-01', 'North', 'Keyboard', 'Priya', 370),
+--('2024-03-02', 'South', 'Monitor', 'Sneha', 890),
+--('2024-03-03', 'East', 'Laptop', 'Ravi', 1150),
+--('2024-03-04', 'West', 'Headphones', 'Vikram', 450),
+--('2024-03-05', 'North', 'Mouse', 'Amit', 230),
+--('2024-03-07', 'South', 'Keyboard', 'Sneha', 400),
+--('2024-03-08', 'East', 'Monitor', 'Ravi', 980),
+--('2024-03-09', 'West', 'Laptop', 'Priya', 1300),
+--('2024-03-10', 'North', 'Monitor', 'Amit', 850),
+--('2024-03-12', 'South', 'Mouse', 'Sneha', 300),
+--('2024-03-15', 'East', 'Headphones', 'Ravi', 500),
+--('2024-03-17', 'West', 'Keyboard', 'Vikram', 320),
+--('2024-03-19', 'North', 'Laptop', 'Priya', 950),
+--('2024-03-22', 'South', 'Monitor', 'Sneha', 890),
+--('2024-03-25', 'East', 'Laptop', 'Ravi', 1150),
+--('2024-03-26', 'West', 'Headphones', 'Amit', 600),
+--('2024-03-27', 'North', 'Mouse', 'Vikram', 180),
+--('2024-03-28', 'South', 'Keyboard', 'Sneha', 420),
+--('2024-03-29', 'East', 'Monitor', 'Priya', 900),
+--('2024-03-30', 'West', 'Laptop', 'Ravi', 1400),
+--('2024-03-31', 'North', 'Monitor', 'Amit', 700),
+--('2024-04-01', 'East', 'Headphones', 'Sneha', 520),
+--('2024-04-02', 'South', 'Mouse', 'Priya', 280),
+--('2024-04-03', 'North', 'Keyboard', 'Ravi', 320),
+--('2024-04-04', 'West', 'Monitor', 'Amit', 950),
+--('2024-04-05', 'North', 'Laptop', 'Vikram', 1200),
+--('2024-04-06', 'East', 'Mouse', 'Priya', 240),
+--('2024-04-07', 'South', 'Headphones', 'Sneha', 480),
+--('2024-04-08', 'North', 'Monitor', 'Amit', 830),
+--('2024-04-09', 'West', 'Keyboard', 'Ravi', 340),
+--('2024-04-10', 'North', 'Laptop', 'Priya', 950),
+--('2024-04-11', 'East', 'Mouse', 'Vikram', 200),
+--('2024-04-12', 'South', 'Monitor', 'Sneha', 870);
+
+
+--1. Find all sales made in the 'North' region with amount greater than 500
+
+--select * from salesinfo
+--where Region = 'North' and Amount>500
+
+--2. List unique products sold
+
+--select * from SalesInfo
+
+--select distinct Product
+--from SalesInfo
+
+
+--3. Find total sales amount per region
+
+--select Region, SUM(Amount) as Total_Sales
+--from SalesInfo
+--group by Region
+
+
+--4. Find regions where total sales exceed 90,00
+ 
+-- select Region, SUM(Amount) as Total_Sales
+--from SalesInfo
+--group by Region
+--Having SUM(Amount) > 9000
+
+
+--5. List salespersons who sold more than 11 products
+
+--select 
+--Salesperson, COUNT(SaleID) as Sales_Count
+--from SalesInfo
+--group by Salesperson
+--Having COUNT(SaleID) > 11
+
+
+--6. Find the number of sales per product in the 'East' region
+
+--select 
+--Product, COUNT(*) as No_Of_Products
+--from SalesInfo
+--where region = 'East'
+--Group by Product
+
+
+
+--7. Get the top 2 regions by total sales amount
+
+--select Top 2
+--Region, Sum(Amount) as Total_Sales
+--from SalesInfo
+--Group by Region
+--order by Total_Sales desc
+
+
+--8. Find distinct combinations of product and region
+
+--Select Distinct  Product , Region
+--from SalesInfo
+
+
+--9. Find salespersons who made sales in more than one region
+
+--Select Salesperson 
+--from SalesInfo
+--Group by Salesperson
+--Having COUNT(Distinct Region)> 1 
+
+
+
+-- 10 . Find products with average sale amount greater than 500
+
+--Select  Product , AVG(Amount) as Avg_Amt
+--from SalesInfo
+--group by Product
+--Having AVG(Amount) > 500
